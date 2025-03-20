@@ -1,0 +1,4 @@
+services:
+  random-logger:
+    image: chentex/random-logger:latest
+    command: 2000 4000
