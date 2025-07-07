@@ -12,8 +12,9 @@ set -Eeo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 [[ "$0" != "$BASH_SOURCE" ]] && EXIT=return || EXIT=exit
 cleanup() {
+  msg "👋 Shutting down ..."
   trap - SIGINT SIGTERM ERR EXIT
-  # script cleanup here
+  docker compose down
 }
 
 setup_colors() {
@@ -38,9 +39,14 @@ export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-$AUTO_NAME}
 msg "🚀 Starting containers in $GREEN$COMPOSE_FILE$NC as $YELLOW$COMPOSE_PROJECT_NAME$NC"
 
 if [ -e "$COMPOSE_FILE" ]; then
-  docker compose up --remove-orphans
+  docker compose up --remove-orphans --abort-on-container-exit &
+  child=$!
+
+  msg "👻 Waiting for compose to finish in backgorund ..."
+  wait $child
+
   e=$?
-  msg "🏁 docker-compose finished with exit code: $GREEN$e$NC"
+  msg "🏁 docker compose finished with exit code: $GREEN$e$NC"
 
   msg "🧼 Cleaning up ..."
   docker compose rm -f
