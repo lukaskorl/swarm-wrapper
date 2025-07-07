@@ -36,6 +36,15 @@ AUTO_NAME="$(hostname)-wrapper"
 export COMPOSE_FILE=/compose.yml
 export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-$AUTO_NAME}
 
+## AWS
+if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$ECR_REGISTRY" ]; then
+  echo "⏭    Skipping AWS ECR login (not configured)";
+else
+  echo -e "🔑   Logging in to ${YELLOW}AWS ECR$NC";
+  apk add -q aws-cli;
+  aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $ECR_REGISTRY;
+fi
+
 ## Generic Docker registry
 if [ -z "$DOCKER_LOGIN_USERNAME" ] || [ -z "$DOCKER_LOGIN_PASSWORD" ] || [ -z "$DOCKER_LOGIN_REGISTRY" ]; then
   msg "⏭  Skipping additional Docker login (not configured)";
