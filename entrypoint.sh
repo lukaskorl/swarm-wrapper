@@ -36,6 +36,14 @@ AUTO_NAME="$(hostname)-wrapper"
 export COMPOSE_FILE=/compose.yml
 export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-$AUTO_NAME}
 
+## Generic Docker registry
+if [ -z "$DOCKER_LOGIN_USERNAME" ] || [ -z "$DOCKER_LOGIN_PASSWORD" ] || [ -z "$DOCKER_LOGIN_REGISTRY" ]; then
+  msg "⏭  Skipping additional Docker login (not configured)";
+else
+  msg "🔑  Logging in to ${YELLOW}Docker registry$NC ($DOCKER_LOGIN_REGISTRY)";
+  echo "$DOCKER_LOGIN_PASSWORD" | docker login -u "${DOCKER_LOGIN_USERNAME}" --password-stdin ${DOCKER_LOGIN_REGISTRY};
+fi
+
 msg "🚀 Starting containers in $GREEN$COMPOSE_FILE$NC as $YELLOW$COMPOSE_PROJECT_NAME$NC"
 
 if [ -e "$COMPOSE_FILE" ]; then
