@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install docker CLI
-RUN apk add --no-cache docker-compose
+RUN apk add --no-cache docker-compose socat
 
 # Copy your script
 COPY --chmod=700 entrypoint.sh /usr/local/bin/entrypoint

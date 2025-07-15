@@ -43,6 +43,21 @@ docker run --rm -it \
 	lukaskorl/swarm-wrapper
 ```
 
+### Advanced networking
+
+This container includes a socat proxy for usage in Swarm mode. It can proxy TCP traffic to another container.
+
+```sh
+docker run --rm -it \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	-v ./demo/docker-compose.yml:/compose.yml:ro \
+	-e PROXY_TARGET=host.docker.internal:8088 \
+	-p 8080:8080 \
+	lukaskorl/swarm-wrapper
+```
+
+In this scenario the `whoami` container is exposed on port `8088` directly by the compose stack. And on port `8080` through the proxy. Check the output by running `curl http://localhost:8080` and `curl http://localhost:8088`.
+
 ## Attribution
 
 This container has been develop from an idea of [js-home.org](https://www.js-home.org/2022/10/docker-swarm-die-2.-mit-usb/) originating from a discussion on the [Swarmkit](https://github.com/moby/swarmkit/issues/1244) repo.

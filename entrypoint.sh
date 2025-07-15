@@ -14,6 +14,9 @@ trap cleanup SIGINT SIGTERM ERR EXIT
 cleanup() {
   msg "👋 Shutting down ..."
   trap - SIGINT SIGTERM ERR EXIT
+  if [ -f /var/run/socat.pid ]; then
+    kill -9 $(</var/run/socat.pid)
+  fi
   docker compose down
 }
 
@@ -38,9 +41,9 @@ export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-$AUTO_NAME}
 
 ## AWS
 if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$ECR_REGISTRY" ]; then
-  echo "⏭    Skipping AWS ECR login (not configured)";
+  echo "⏭  Skipping AWS ECR login (not configured)";
 else
-  echo -e "🔑   Logging in to ${YELLOW}AWS ECR$NC";
+  echo -e "🔑  Logging in to ${YELLOW}AWS ECR$NC";
   apk add -q aws-cli;
   aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $ECR_REGISTRY;
 fi
@@ -59,6 +62,13 @@ if [ -e "$COMPOSE_FILE" ]; then
   docker compose up --remove-orphans --abort-on-container-exit &
   child=$!
 
+  if [ ! -z "$PROXY_TARGET" ]; then
+    msg "🌍 Start proxy for $YELLOW$PROXY_TARGET$NC on port $GREEN${PROXY_PORT:-8080}$NC"
+    socat TCP4-LISTEN:${PROXY_PORT:-8080},fork,reuseaddr,ignoreeof TCP4:$PROXY_TARGET &
+    echo $! > /var/run/socat.pid
+  fi
+  # https://chandrat.hashnode.dev/simulate-tcp-and-tls-proxy-using-socket-cat
+
   msg "👻 Waiting for compose to finish in backgorund ..."
   wait $child
 
@@ -66,6 +76,9 @@ if [ -e "$COMPOSE_FILE" ]; then
   msg "🏁 docker compose finished with exit code: $GREEN$e$NC"
 
   msg "🧼 Cleaning up ..."
+  if [ -f /var/run/socat.pid ]; then
+    kill -9 $(</var/run/socat.pid)
+  fi
   docker compose rm -f
   exit $e
 else

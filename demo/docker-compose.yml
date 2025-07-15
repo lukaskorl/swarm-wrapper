@@ -2,3 +2,7 @@ services:
   random-logger:
     image: chentex/random-logger:latest
     command: 2000 4000
+  whoami:
+    image: traefik/whoami:latest
+    ports:
+      - 8088:80
