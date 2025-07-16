@@ -59,7 +59,7 @@ fi
 msg "🚀 Starting containers in $GREEN$COMPOSE_FILE$NC as $YELLOW$COMPOSE_PROJECT_NAME$NC"
 
 if [ -e "$COMPOSE_FILE" ]; then
-  docker compose up --remove-orphans --abort-on-container-exit &
+  docker compose up --force-recreate --remove-orphans --abort-on-container-exit &
   child=$!
 
   if [ ! -z "$PROXY_TARGET" ]; then
