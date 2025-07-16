@@ -14,10 +14,10 @@ trap cleanup SIGINT SIGTERM ERR EXIT
 cleanup() {
   msg "👋 Shutting down ..."
   trap - SIGINT SIGTERM ERR EXIT
-  if [ -f /var/run/socat.pid ]; then
-    kill -9 $(</var/run/socat.pid)
-  fi
   docker compose down
+  if [ -f /var/run/socat.pid ]; then
+    kill -9 $(cat /var/run/socat.pid)
+  fi
 }
 
 setup_colors() {
